@@ -1,33 +1,42 @@
 import React from 'react';
+import { Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from '@mui/material';
 import { formatCurrency } from '../utils/formatCurrency';
 
 const ContributionList = ({ contributions }) => {
     return (
-        <div className="contribution-list">
-            <h2>Your Contributions</h2>
-            {contributions.length === 0 ? (
-                <p>You haven't made any contributions yet.</p>
+        <Paper sx={{ p: 2, mb: 3 }}>
+            <Typography variant="h6" gutterBottom>Your Contributions</Typography>
+            {(!contributions || contributions.length === 0) ? (
+                <Typography variant="body2" color="text.secondary">You haven't made any contributions yet.</Typography>
             ) : (
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {contributions.map((contribution) => (
-                            <tr key={contribution._id}>
-                                <td>{new Date(contribution.createdAt).toLocaleDateString()}</td>
-                                <td>{formatCurrency(contribution.amount)}</td>
-                                <td>{contribution.status}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                <TableContainer>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>Date</TableCell>
+                                <TableCell>Amount</TableCell>
+                                <TableCell>Status</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {contributions.map((contribution) => (
+                                <TableRow key={contribution.id}>
+                                    <TableCell>{new Date(contribution.createdAt).toLocaleDateString()}</TableCell>
+                                    <TableCell>{formatCurrency(contribution.amount)}</TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            label={contribution.status}
+                                            size="small"
+                                            color={contribution.status === 'paid' ? 'success' : contribution.status === 'failed' ? 'error' : 'warning'}
+                                        />
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
             )}
-        </div>
+        </Paper>
     );
 };
 

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { Typography, Button, Card, CardContent, Grid, Container, Alert, Stack } from '@mui/material';
 import api from '../services/api';
-import { useAuth } from '../hooks/useAuth';
+import { useAuth } from '../contexts/AuthContext';
 import ContributionList from '../components/ContributionList';
 import PaymentHistory from '../components/PaymentHistory';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -17,41 +18,61 @@ const Dashboard = () => {
         const fetchDashboardData = async () => {
             try {
                 const response = await api.get('/users/dashboard');
-                setDashboardData(response.data);
+                setDashboardData(response.data.data);
             } catch (err) {
                 setError('Failed to load dashboard data');
             } finally {
                 setLoading(false);
             }
         };
-
         fetchDashboardData();
     }, []);
 
     if (loading) return <LoadingSpinner />;
-    if (error) return <div className="error-message">{error}</div>;
+    if (error) return <Container sx={{ py: 4 }}><Alert severity="error">{error}</Alert></Container>;
 
     return (
-        <div className="dashboard">
-            <h1>Welcome, {user.name}</h1>
+        <Container maxWidth="md" sx={{ py: 4 }}>
+            <Typography variant="h4" gutterBottom>Welcome, {user.name}</Typography>
+
+            {!user.isVerified && (
+                <Alert severity="info" sx={{ mb: 3 }} action={
+                    <Button component={Link} to="/verification" color="inherit" size="small">Verify now</Button>
+                }>
+                    Your account is not verified yet. Verify your identity to unlock full features.
+                </Alert>
+            )}
+
             {dashboardData && (
                 <>
-                    <div className="dashboard-summary">
-                        <div className="summary-card">
-                            <h3>Total Contributions</h3>
-                            <p>{formatCurrency(dashboardData.totalContributions)}</p>
-                        </div>
-                        <div className="summary-card">
-                            <h3>Current Balance</h3>
-                            <p>{formatCurrency(dashboardData.currentBalance)}</p>
-                        </div>
-                    </div>
-                    <Link to="/contribute" className="btn btn-primary">Make a Contribution</Link>
-                    <ContributionList contributions={dashboardData.recentContributions} />
-                    <PaymentHistory payments={dashboardData.recentPayments} />
+                    <Grid container spacing={3} sx={{ mb: 4 }}>
+                        <Grid item xs={12} sm={6}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="subtitle2" color="text.secondary">Total Contributions</Typography>
+                                    <Typography variant="h5">{formatCurrency(dashboardData.totalContributions)}</Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
+                            <Card>
+                                <CardContent>
+                                    <Typography variant="subtitle2" color="text.secondary">Current Balance</Typography>
+                                    <Typography variant="h5">{formatCurrency(dashboardData.currentBalance)}</Typography>
+                                </CardContent>
+                            </Card>
+                        </Grid>
+                    </Grid>
+
+                    <Stack direction="row" spacing={2} sx={{ mb: 4 }}>
+                        <Button component={Link} to="/contribute" variant="contained">Make a Contribution</Button>
+                    </Stack>
+
+                    <ContributionList contributions={dashboardData.recentContributions || []} />
+                    <PaymentHistory payments={dashboardData.recentPayments || []} />
                 </>
             )}
-        </div>
+        </Container>
     );
 };
 

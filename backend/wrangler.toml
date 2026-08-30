@@ -1,0 +1,33 @@
+# Akawo Platform — Cloudflare Worker backend
+name = "akawo-backend"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# --- D1 (SQLite) database ---
+# Create it once with:  npx wrangler d1 create akawo-db
+# Then paste the returned database_id below (or leave the placeholder for local dev).
+[[d1_databases]]
+binding = "DB"
+database_name = "akawo-db"
+database_id = "00000000-0000-0000-0000-000000000000"
+
+# --- R2 bucket for uploaded files (payment proofs, KYC images/videos) ---
+# Create it once with:  npx wrangler r2 bucket create akawo-uploads
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "akawo-uploads"
+
+[vars]
+# Non-secret configuration. Secrets (below) must be set with `wrangler secret put`.
+PAYSTACK_BASE_URL = "https://api.paystack.co"
+CORS_ORIGIN = "*"
+JWT_EXPIRES_IN = "30d"
+
+# --- Secrets: set with `npx wrangler secret put <NAME>` (or in .dev.vars locally) ---
+# JWT_SECRET            — required, used to sign auth tokens
+# PAYSTACK_SECRET_KEY   — Paystack secret key for payments
+# ADMIN_EMAIL           — (optional) bootstrap admin email
+# ADMIN_PASSWORD        — (optional) bootstrap admin password
+# RESEND_API_KEY        — (optional) Resend API key for transactional email
+# FROM_EMAIL            — (optional) sender email (default: no-reply@akawo.com)

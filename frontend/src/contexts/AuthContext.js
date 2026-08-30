@@ -1,98 +1,81 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios'; // Import axios for making API requests
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
+import api, { getToken, setToken } from '../services/api';
 
-// Create context
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
-// Custom hook to use the auth context
-export function useAuth() {
-    return useContext(AuthContext);
-}
-
-// AuthProvider component to provide auth context to children
 export function AuthProvider({ children }) {
-    const [currentUser, setCurrentUser] = useState(null);
-    const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-    // Fetch user information when the component mounts
-    useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            fetchUser();
-        } else {
-            setLoading(false);
-        }
-    }, []);
+  const loadUser = useCallback(async () => {
+    const token = getToken();
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await api.get('/auth/me');
+      setUser(res.data.data);
+    } catch (err) {
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-    // Function to fetch the current user from the API
-    const fetchUser = async () => {
-        try {
-            const response = await axios.get('/api/users/me');
-            setCurrentUser(response.data);
-        } catch (error) {
-            console.error('Error fetching user:', error);
-            setCurrentUser(null);
-        } finally {
-            setLoading(false);
-        }
-    };
+  useEffect(() => {
+    loadUser();
+  }, [loadUser]);
 
-    // Function to log in a user
-    const login = async (email, password) => {
-        try {
-            const response = await axios.post('/api/auth/login', { email, password });
-            const { token, user } = response.data;
-            localStorage.setItem('token', token);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            setCurrentUser(user);
-            return user;
-        } catch (error) {
-            console.error('Login error:', error);
-            throw error;
-        }
-    };
+  const login = useCallback(async (email, password) => {
+    const res = await api.post('/auth/login', { email, password });
+    setToken(res.data.token);
+    setUser(res.data.user);
+    return res.data.user;
+  }, []);
 
-    // Function to register a new user
-    const register = async (name, email, password, bvn) => {
-        try {
-            const response = await axios.post('/api/auth/register', { name, email, password, bvn });
-            const { token, user } = response.data;
-            localStorage.setItem('token', token);
-            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            setCurrentUser(user);
-            return user;
-        } catch (error) {
-            console.error('Registration error:', error);
-            throw error;
-        }
-    };
+  const register = useCallback(async (payload) => {
+    const res = await api.post('/auth/register', payload);
+    setToken(res.data.token);
+    setUser(res.data.user);
+    return res.data.user;
+  }, []);
 
-    // Function to log out the user
-    const logout = async () => {
-        try {
-            await axios.post('/api/auth/logout');
-        } catch (error) {
-            console.error('Logout error:', error);
-        } finally {
-            localStorage.removeItem('token');
-            delete axios.defaults.headers.common['Authorization'];
-            setCurrentUser(null);
-        }
-    };
+  const logout = useCallback(async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (err) {
+      // ignore — logout should always succeed client-side
+    }
+    setToken(null);
+    setUser(null);
+  }, []);
 
-    // Context value that will be available to children components
-    const value = {
-        currentUser,
-        login,
-        register,
-        logout,
-        loading
-    };
+  const value = useMemo(
+    () => ({
+      user,
+      currentUser: user, // alias for backwards compatibility
+      isAuthenticated: !!user,
+      isAdmin: user?.role === 'admin',
+      loading,
+      login,
+      register,
+      logout,
+    }),
+    [user, loading, login, register, logout]
+  );
 
-    return (
-        <AuthContext.Provider value={value}>
-            {!loading && children}
-        </AuthContext.Provider>
-    );
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return ctx;
+}
+
+export default AuthContext;

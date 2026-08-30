@@ -1,0 +1,19 @@
+# Copy to `.dev.vars` and fill in for local development (wrangler dev).
+# This file is git-ignored; never commit real secrets.
+
+JWT_SECRET=change-me-to-a-long-random-string
+JWT_EXPIRES_IN=30d
+
+PAYSTACK_SECRET_KEY=sk_test_xxxxxxxxxxxxxxxxxxxx
+PAYSTACK_BASE_URL=https://api.paystack.co
+
+# Optional — auto-creates an admin account on first request when both are set:
+ADMIN_EMAIL=admin@akawo.com
+ADMIN_PASSWORD=ChangeMe123!
+
+# Optional — transactional email (Resend):
+RESEND_API_KEY=
+FROM_EMAIL=no-reply@akawo.com
+
+# Optional — comma-separated list of allowed origins (default: *):
+CORS_ORIGIN=*
