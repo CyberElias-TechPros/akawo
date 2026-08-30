@@ -1,26 +1,33 @@
-build/
-*.apk
-*.jar
-*.war
-*.ear
-*.class
-*.dex
-*.so
-*.dat
-*.bin
-*.dll
-*.pdb
-*.log
-*.tmp
-*.swp
-*.bak
-*.old
-*.sync
-*.lock
-*.git/
-.DS_Store
+# Dependencies
 node_modules/
+.pnp
+.pnp.js
+
+# Build output
+build/
+dist/
+out/
+.next/
+.wrangler/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+.dev.vars
+*.pem
+
+# Logs
 *.log
-*.min.js
-*.min.css
-*.map
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Test coverage
+coverage/

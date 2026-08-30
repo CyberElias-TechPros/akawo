@@ -1,72 +1,75 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { Box, TextField, Button, Typography, Container, Paper, Alert } from '@mui/material';
 import { useAuth } from '../contexts/AuthContext';
+import { validateEmail, validatePassword, validateBVN } from '../utils/validateInput';
 
 const Register = () => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [bvn, setBvn] = useState('');
+    const [form, setForm] = useState({ name: '', email: '', phone: '', password: '', bvn: '' });
+    const [error, setError] = useState('');
+    const [submitting, setSubmitting] = useState(false);
     const { register } = useAuth();
     const navigate = useNavigate();
 
+    const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+    const validate = () => {
+        if (!form.name.trim()) return 'Please enter your full name';
+        if (!validateEmail(form.email)) return 'Please enter a valid email address';
+        if (!validatePassword(form.password)) {
+            return 'Password must be at least 8 characters with 1 uppercase, 1 lowercase and 1 number';
+        }
+        if (!validateBVN(form.bvn)) return 'BVN must be exactly 11 digits';
+        return null;
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+        const validationError = validate();
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+        setSubmitting(true);
         try {
-            await register(name, email, password, bvn);
-            navigate('/verification');
-        } catch (error) {
-            alert('Registration failed: ' + error.message);
+            const user = await register({
+                name: form.name.trim(),
+                email: form.email.trim(),
+                phone: form.phone.trim() || undefined,
+                password: form.password,
+                bvn: form.bvn.trim(),
+            });
+            navigate(user.isVerified ? '/dashboard' : '/verification');
+        } catch (err) {
+            setError(err.response?.data?.error || 'Registration failed. Please try again.');
+        } finally {
+            setSubmitting(false);
         }
     };
 
     return (
-        <div className="register">
-            <h2>Register</h2>
-            <form onSubmit={handleSubmit}>
-                <div>
-                    <label htmlFor="name">Full Name:</label>
-                    <input
-                        type="text"
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="email">Email:</label>
-                    <input
-                        type="email"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="password">Password:</label>
-                    <input
-                        type="password"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="bvn">BVN:</label>
-                    <input
-                        type="text"
-                        id="bvn"
-                        value={bvn}
-                        onChange={(e) => setBvn(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit">Register</button>
-            </form>
-        </div>
+        <Container maxWidth="xs" sx={{ py: 8 }}>
+            <Paper elevation={2} sx={{ p: 4 }}>
+                <Typography variant="h5" component="h1" gutterBottom align="center">
+                    Create your account
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate>
+                    <TextField fullWidth label="Full Name" name="name" value={form.name} onChange={handleChange} margin="normal" required />
+                    <TextField fullWidth label="Email" name="email" type="email" value={form.email} onChange={handleChange} margin="normal" required />
+                    <TextField fullWidth label="Phone Number" name="phone" value={form.phone} onChange={handleChange} margin="normal" placeholder="e.g. 08012345678" />
+                    <TextField fullWidth label="Password" name="password" type="password" value={form.password} onChange={handleChange} margin="normal" required helperText="At least 8 characters with upper & lower case and a number" />
+                    <TextField fullWidth label="BVN (Bank Verification Number)" name="bvn" value={form.bvn} onChange={handleChange} margin="normal" required inputProps={{ maxLength: 11 }} />
+                    {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
+                    <Button type="submit" fullWidth variant="contained" disabled={submitting} sx={{ mt: 3 }}>
+                        {submitting ? 'Creating account…' : 'Register'}
+                    </Button>
+                    <Typography variant="body2" align="center" sx={{ mt: 2 }}>
+                        Already have an account? <Link to="/login">Login</Link>
+                    </Typography>
+                </Box>
+            </Paper>
+        </Container>
     );
 };
 
