@@ -33,3 +33,5 @@ worker/dist/
 # env files
 .env
 *.local
+
+dist/
