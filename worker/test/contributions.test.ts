@@ -118,4 +118,28 @@ describe('contributions', () => {
         const gone = await api('GET', `/api/contributions/${c.body.data.contribution.id}`, { token: u.tokens.accessToken });
         expect(gone.status).toBe(404);
     });
+    it('blocks deletion while a payment is in flight', async () => {
+        const u = await registerUser();
+        const c = await api('POST', '/api/contributions', { token: u.tokens.accessToken, body: { amount: 500 } });
+        expect(c.status).toBe(201);
+        const init = await api('POST', '/api/payments/initiate', {
+            token: u.tokens.accessToken,
+            body: { contributionId: c.body.data.contribution.id },
+        });
+        expect(init.status).toBe(201);
+        const del = await api('DELETE', `/api/contributions/${c.body.data.contribution.id}`, { token: u.tokens.accessToken });
+        expect(del.status).toBe(409);
+        expect(del.body.error.code).toBe('payment_in_flight');
+    });
+
+    it('filters the list by label', async () => {
+        const u = await registerUser();
+        const ca = await api('POST', '/api/contributions', { token: u.tokens.accessToken, body: { amount: 100, label: 'School fees' } });
+        await api('POST', '/api/contributions', { token: u.tokens.accessToken, body: { amount: 200, label: 'Data subscription' } });
+        const res = await api('GET', '/api/contributions?label=School', { token: u.tokens.accessToken });
+        expect(res.status).toBe(200);
+        const rows = res.body.data.contributions as Array<{ id: string }>;
+        expect(rows).toHaveLength(1);
+        expect(rows[0].id).toBe(ca.body.data.contribution.id);
+    });
 });

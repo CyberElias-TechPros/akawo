@@ -13,6 +13,8 @@ interface ListResponse {
 export default function Contributions() {
     const [list, setList] = useState<ListResponse | null>(null);
     const [page, setPage] = useState(1);
+    const [statusFilter, setStatusFilter] = useState('');
+    const [labelFilter, setLabelFilter] = useState('');
     const [error, setError] = useState<string | null>(null);
     const [form, setForm] = useState({ amount: '', dueDate: '', label: '', frequency: 'once' as 'once' | 'monthly' });
     const [formError, setFormError] = useState<string | null>(null);
@@ -22,11 +24,14 @@ export default function Contributions() {
     const [busyId, setBusyId] = useState<string | null>(null);
 
     const load = useCallback((p: number) => {
+        const params = new URLSearchParams({ page: String(p) });
+        if (statusFilter) params.set('status', statusFilter);
+        if (labelFilter.trim()) params.set('label', labelFilter.trim());
         api
-            .get<ListResponse>(`/contributions?page=${p}`)
+            .get<ListResponse>(`/contributions?${params.toString()}`)
             .then(setList)
             .catch((e) => setError(e instanceof ApiRequestError ? e.message : 'Failed to load contributions'));
-    }, []);
+    }, [statusFilter, labelFilter]);
 
     useEffect(() => {
         load(page);
@@ -143,7 +148,7 @@ export default function Contributions() {
                                 onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))}
                             />
                         </Field>
-                        <Field id="c-freq" label="Frequency">
+                        <Field id="c-freq" label="Frequency" hint={form.frequency === 'monthly' ? 'Paying an installment automatically schedules the next month.' : undefined}>
                             <select
                                 id="c-freq"
                                 className="select"
@@ -161,10 +166,35 @@ export default function Contributions() {
                 </form>
             </div>
 
+            <div className="searchbox" style={{ marginBottom: 14 }}>
+                <input
+                    className="input"
+                    placeholder="Filter by label…"
+                    value={labelFilter}
+                    onChange={(e) => {
+                        setLabelFilter(e.target.value);
+                        setPage(1);
+                    }}
+                />
+                <select
+                    className="select"
+                    value={statusFilter}
+                    onChange={(e) => {
+                        setStatusFilter(e.target.value);
+                        setPage(1);
+                    }}
+                >
+                    <option value="">All statuses</option>
+                    <option value="pending">Pending</option>
+                    <option value="paid">Paid</option>
+                    <option value="failed">Failed</option>
+                </select>
+            </div>
+
             {list.contributions.length === 0 ? (
                 <EmptyState
-                    title="No contributions yet"
-                    body="Create your first contribution above — pick an amount and a due date, and Akawo will keep the rhythm."
+                    title="No contributions found"
+                    body="Create a contribution above — pick an amount and a due date, and Akawo will keep the rhythm."
                 />
             ) : (
                 <div className="rowlist">

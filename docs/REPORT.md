@@ -68,20 +68,23 @@ Browser ──https──▶ Vercel (static SPA) ──/api rewrite──▶ aka
 - **Users** — dashboard (totals, next contribution with overdue flag,
   recent activity, unread count, verification state), profile update with
   strict field stripping, password change (revokes all refresh tokens).
-- **Contributions** — CRUD with validation, IDOR guards, pagination.
+- **Contributions** — CRUD with validation, label search + status filters, IDOR guards, pagination; **monthly contributions roll into the next month's installment atomically at settle time**; deletion is blocked while a payment is in flight.
 - **Payments** — `pending → completed | failed` plus
   `pending_verification` for proofs; `settlePayment` is idempotent inside a
   D1 transaction (payment → contribution → audit → notification → receipt
-  email). Mock gateway (deterministic test cards) and Paystack mode
-  (`GATEWAY_MODE=paystack`) behind one interface; Paystack webhook verified
-  with a shared secret, unknown references acknowledged and ignored.
+  email). One in-flight payment per contribution
+  (`409 payment_in_flight`). Mock gateway (deterministic test cards) and
+  Paystack mode (`GATEWAY_MODE=paystack`) behind one interface; Paystack
+  webhook verified with a shared secret, unknown references acknowledged
+  and ignored. Paginated user payment history powers the History page.
 - **KYC** — face (JPG/PNG/WEBP/HEIC ≤5 MB) + video (MP4/WEBM ≤50 MB) to R2
   under `verifications/<uid>/<vid>/`; one pending at a time; resubmit
   allowed after rejection; media served **only** through signed URLs whose
   JWT subject (`<uid>:<role>`, 15 min TTL) must match the requesting
   bearer's identity (stranger with a stolen URL → 403).
 - **Notifications** — in-app inbox, unread count, read/read-all, strict
-  per-user isolation.
+  per-user isolation; **daily cron reminders** for due-today and overdue
+  contributions (in-app + email, deduped to once per day per type).
 - **Admin** — stats, users (search/filter/paginate, suspend/activate,
   promote/demote; no self-suspend, no self-demotion, last admin protected;
   suspend revokes tokens), KYC queue with signed media, proof approve
@@ -139,13 +142,15 @@ code splitting (~102 kB main chunk gzipped).
 | Check | Result |
 | ----- | ------ |
 | `worker`: `tsc --noEmit` | ✅ clean |
-| `worker`: `npx vitest run` (64 integration tests across 7 specs, real worker + local D1/R2/KV, per-test reset) | ✅ **64/64** |
+| `worker`: `npx vitest run` (69 integration tests across 8 specs, real worker + local D1/R2/KV, per-test reset) | ✅ **69/69** |
 | `worker`: live `wrangler dev` → `npm run db:seed` → curl happy-path: login → me → dashboard → contribution → card charge → notification + email receipt → KYC submit → admin signed-media fetch → KYC approve → verified → proof upload → proof approve → refresh rotation (idempotent re-seed verified) | ✅ all steps passed |
 | `frontend`: `tsc --noEmit` | ✅ clean |
 | `frontend`: `npx vitest run` (home render, login success, login failure, authenticated dashboard, unauthenticated redirect) | ✅ **5/5** |
 | `frontend`: `npm run build` | ✅ green, code-split per route |
 | Vite dev server serving every route + proxying `/api` → Worker, verified through the live preview host | ✅ 200s across the board |
 | Root cause fixes made along the way | Luhn rejecting Paystack test tokens (test-token exemption); KV/D1 state shared across tests (reset endpoint); `NODE_ENV` unset in worker env (`LOCAL_DEV` var pattern); multipart MIME loss in test helper; Hono multi-segment route for media; signed-URL subject scoping; cross-origin dev links rewritten same-origin |
+| CI | ✅ `.github/workflows/ci.yml` — worker (typecheck + 69 tests) and frontend (typecheck + tests + build) on every push/PR to master |
+| Gap analysis | ✅ `analysis.md` — full domain audit; every code gap found was closed and re-verified live |
 
 ## H. Deployment runbook (summary — full version in `docs/SETUP.md`)
 
@@ -165,6 +170,10 @@ optionally Paystack/Resend) → `wrangler deploy` → one-time admin bootstrap.
 - **KYC review is manual** (`FACE_MODE=manual`), which is the honest state:
   no facial-recognition service was configured. An API-based liveness
   provider can be wired into `FACE_MODE=api` later.
+- **BVN is format-checked and hashed, not validated against the bank
+  network** — no BVN provider was configured; the hook point is documented.
+- The cron trigger for due-date reminders must be added to
+  `wrangler.jsonc` at deploy time (one line, documented) — the code is in.
 - The committed history still contains the old `node_modules` blobs (they
   are removed from the working tree and index; a history rewrite was
   deliberately not performed on a shared branch).

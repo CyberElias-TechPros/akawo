@@ -31,8 +31,9 @@ npm run build        # typecheck + production bundle → dist/
 | `/reset-password`          | public  | Set new password from token               |
 | `/verify-email`            | public  | Auto-verifies the emailed token           |
 | `/dashboard`               | user    | Summary, next contribution, activity      |
-| `/dashboard/contributions` | user    | Create / edit / delete / pay              |
+| `/dashboard/contributions` | user    | Create / edit / delete / pay (label + status filters) |
 | `/dashboard/contribute/:id`| user    | Pay by card or upload transfer proof      |
+| `/dashboard/history`       | user    | Full payment history                      |
 | `/dashboard/verification`  | user    | KYC status + submit/resubmit              |
 | `/dashboard/notifications` | user    | Inbox (read / read-all)                   |
 | `/dashboard/profile`       | user    | Profile + password change                 |

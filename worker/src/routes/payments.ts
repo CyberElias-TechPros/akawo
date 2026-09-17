@@ -65,7 +65,16 @@ async function ownedPayment(db: Env['DB'], id: string, userId: string): Promise<
  */
 async function settlePayment(db: Env['DB'], env: Env, payment: PaymentRow, gatewayReference: string) {
     const now = nowIso();
-    await tx(db, [
+
+    // Monthly contributions roll into the next month's installment the moment
+    // this one settles (created inside the same transaction).
+    const contribRow = (await first<{ frequency: string; due_date: string | null; label: string | null }>(
+        db,
+        `SELECT frequency, due_date, label FROM contributions WHERE id = ?`,
+        payment.contribution_id,
+    )) as { frequency: string; due_date: string | null; label: string | null } | null;
+
+    const statements: Array<{ sql: string; params: unknown[] }> = [
         {
             sql: `UPDATE payments SET status = 'completed', gateway_reference = ?, completed_at = ?, failure_reason = NULL, updated_at = ? WHERE id = ? AND status = 'pending'`,
             params: [gatewayReference, now, now, payment.id],
@@ -74,7 +83,23 @@ async function settlePayment(db: Env['DB'], env: Env, payment: PaymentRow, gatew
             sql: `UPDATE contributions SET status = 'paid', paid_at = ?, updated_at = ? WHERE id = ? AND status = 'pending'`,
             params: [now, now, payment.contribution_id],
         },
-    ]);
+    ];
+    let nextDue: string | null = null;
+    if (contribRow?.frequency === 'monthly') {
+        const today = now.slice(0, 10);
+        const base = contribRow.due_date
+            ? new Date(contribRow.due_date + 'T00:00:00Z')
+            : new Date(Date.now() - 30 * 86400000);
+        base.setUTCMonth(base.getUTCMonth() + 1);
+        nextDue = base.toISOString().slice(0, 10);
+        if (nextDue < today) nextDue = today;
+        statements.push({
+            sql: `INSERT INTO contributions (id, user_id, amount_kobo, label, frequency, status, due_date, created_at, updated_at)
+                  VALUES (?, ?, ?, ?, 'monthly', 'pending', ?, ?, ?)`,
+            params: [randomId(), payment.user_id, payment.amount_kobo, contribRow.label, nextDue, now, now],
+        });
+    }
+    await tx(db, statements);
     await audit(env, payment.user_id, 'payment.completed', 'payment', payment.id, {
         amount: money(payment.amount_kobo),
         gateway: payment.gateway,
@@ -88,6 +113,18 @@ async function settlePayment(db: Env['DB'], env: Env, payment: PaymentRow, gatew
         `Date:          ${now}\n` +
         (contrib?.label ? `For:           ${contrib.label}\n` : '') +
         `\nThank you for contributing with Akawo.`;
+    if (nextDue) {
+        await notify(
+            env,
+            payment.user_id,
+            'installment_scheduled',
+            'Next installment scheduled',
+            `Your monthly contribution has a new installment due ${nextDue}.`,
+        );
+        await audit(env, payment.user_id, 'contribution.installment_scheduled', 'contribution', payment.contribution_id, {
+            dueDate: nextDue,
+        });
+    }
     const user = await first<{ name: string; email: string }>(db, `SELECT name, email FROM users WHERE id = ?`, payment.user_id);
     if (user) {
         await notify(env, payment.user_id, 'payment_completed', 'Payment successful', `${formatNgn(payment.amount_kobo)} contributed. Reference ${gatewayReference}.`);
@@ -152,6 +189,16 @@ app.post('/initiate', requireUser, async (c) => {
                 : 'This contribution is no longer payable',
             'not_payable',
         );
+    }
+
+    const inFlight = (await first<{ n: number }>(
+        c.env.DB,
+        `SELECT COUNT(*) AS n FROM payments
+         WHERE contribution_id = ? AND status IN ('pending','pending_verification')`,
+        contrib.id,
+    )) as { n: number } | null;
+    if (inFlight?.n) {
+        throw ApiError.conflict('A payment for this contribution is already in progress', 'payment_in_flight');
     }
 
     const id = randomId();

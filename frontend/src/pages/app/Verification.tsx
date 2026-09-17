@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, ApiRequestError } from '../../api/client';
-import type { VerificationRecord } from '../../api/types';
+import type { MyVerification, VerificationRecord } from '../../api/types';
 import { Badge, Field, toast } from '../../components/ui';
 import { formatDate } from '../../utils/format';
 
 interface Status {
     isVerified: boolean;
-    latest: VerificationRecord | null;
+    latest: MyVerification | null;
 }
 
 const FACE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/heic'];
@@ -20,6 +20,7 @@ export default function VerificationPage() {
     const [video, setVideo] = useState<File | null>(null);
     const [busy, setBusy] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [viewing, setViewing] = useState(false);
 
     const load = useCallback(() => {
         Promise.all([
@@ -114,6 +115,13 @@ export default function VerificationPage() {
                             you’ll get a notification either way.
                         </p>
                     )}
+                    {latest?.media && (
+                        <div style={{ marginTop: 14 }}>
+                            <button className="btn btn--ghost btn--sm" onClick={() => setViewing(true)}>
+                                View my submission
+                            </button>
+                        </div>
+                    )}
                     {history.length > 1 && (
                         <div style={{ marginTop: 18, borderTop: '1px solid var(--line-soft)', paddingTop: 14 }}>
                             <b style={{ fontSize: 14 }}>History</b>
@@ -202,6 +210,34 @@ export default function VerificationPage() {
                     )}
                 </div>
             </div>
+
+            {viewing && latest?.media && (
+                <div
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="My verification submission"
+                    style={{ position: 'fixed', inset: 0, zIndex: 80, background: 'rgba(16,25,21,0.5)', display: 'grid', placeItems: 'center', padding: 20 }}
+                    onClick={(e) => e.target === e.currentTarget && setViewing(false)}
+                >
+                    <div className="card" style={{ width: 'min(100%, 640px)', maxHeight: '86vh', overflow: 'auto', position: 'relative' }}>
+                        <button className="iconbtn" style={{ position: 'absolute', top: 14, right: 14 }} onClick={() => setViewing(false)} aria-label="Close">
+                            ✕
+                        </button>
+                        <h3>Your submission</h3>
+                        <p className="card__sub">Submitted {formatDate(latest.createdAt)} · {latest.status}</p>
+                        <div className="media-grid">
+                            <figure className="media-cell" style={{ margin: 0 }}>
+                                <img src={latest.media.face} alt="My facial photo submission" />
+                                <figcaption>Facial photo</figcaption>
+                            </figure>
+                            <figure className="media-cell" style={{ margin: 0 }}>
+                                <video src={latest.media.liveness} controls preload="metadata" />
+                                <figcaption>Liveness video</figcaption>
+                            </figure>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

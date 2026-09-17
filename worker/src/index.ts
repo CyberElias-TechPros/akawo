@@ -1,5 +1,6 @@
 import { Hono } from 'hono';
 import { allowedOrigins } from './env';
+import type { Env } from './env';
 import type { AppEnv } from './types';
 import {
     ApiError,
@@ -9,6 +10,7 @@ import {
 } from './util/http';
 import { randomId } from './util/crypto';
 import { ensureSchema } from './db/migrate';
+import { runDueReminders } from './services/reminders';
 import authRoutes from './routes/auth';
 import userRoutes from './routes/users';
 import contributionRoutes from './routes/contributions';
@@ -135,3 +137,12 @@ app.onError((err, c) => {
 });
 
 export default app;
+
+/**
+ * Cron entry point — due-date reminders.
+ * Enable in production by adding to wrangler.jsonc (07:00 UTC = 08:00 WAT):
+ *   "cron": [{ "schedule": "0 7 * * *" }]
+ */
+export async function scheduled(_event: ScheduledEvent, env: Env): Promise<void> {
+    await runDueReminders(env);
+}

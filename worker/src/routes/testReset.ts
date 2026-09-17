@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { AppEnv } from '../types';
 import { ApiError } from '../util/http';
+import { runDueReminders } from '../services/reminders';
 
 const app = new Hono<AppEnv>();
 
@@ -36,6 +37,16 @@ app.post('/reset', async (c) => {
     }
 
     return c.json({ success: true, data: { reset: true } });
+});
+
+/**
+ * DEV-ONLY: trigger the daily due-reminder cron on demand (tests + manual
+ * verification). Returns 404 unless LOCAL_DEV=true.
+ */
+app.post('/run-cron', async (c) => {
+    if (c.env.LOCAL_DEV !== 'true') throw ApiError.notFound();
+    const result = await runDueReminders(c.env);
+    return c.json({ success: true, data: result });
 });
 
 export default app;

@@ -17,6 +17,7 @@ const ContributionPay = lazy(() => import('./pages/app/ContributionPay'));
 const Verification = lazy(() => import('./pages/app/Verification'));
 const Profile = lazy(() => import('./pages/app/Profile'));
 const Notifications = lazy(() => import('./pages/app/Notifications'));
+const History = lazy(() => import('./pages/app/History'));
 
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 const AdminOverview = lazy(() => import('./pages/admin/AdminOverview'));
@@ -55,6 +56,7 @@ export default function App() {
                     <Route path="contributions" element={<Contributions />} />
                     <Route path="contribute/:id" element={<ContributionPay />} />
                     <Route path="verification" element={<Verification />} />
+                    <Route path="history" element={<History />} />
                     <Route path="profile" element={<Profile />} />
                     <Route path="notifications" element={<Notifications />} />
                 </Route>

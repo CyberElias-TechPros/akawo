@@ -57,13 +57,21 @@ async function ownedContribution(db: Env['DB'], id: string, userId: string): Pro
 app.get('/', requireUser, async (c) => {
     const user = userOf(c);
     const status = c.req.query('status');
+    const label = (c.req.query('label') || '').trim();
     const page = Math.max(1, parseInt(c.req.query('page') || '1', 10) || 1);
     const limit = Math.min(50, Math.max(1, parseInt(c.req.query('limit') || '20', 10) || 20));
 
-    const where = status && ['pending', 'paid', 'failed', 'cancelled'].includes(status)
-        ? `WHERE user_id = ? AND status = ?`
-        : `WHERE user_id = ?`;
-    const params: unknown[] = [user.id, ...(status ? [status] : [])];
+    const clauses: string[] = ['user_id = ?'];
+    const params: unknown[] = [user.id];
+    if (status && ['pending', 'paid', 'failed', 'cancelled'].includes(status)) {
+        clauses.push('status = ?');
+        params.push(status);
+    }
+    if (label) {
+        clauses.push('label LIKE ?');
+        params.push(`%${label}%`);
+    }
+    const where = `WHERE ${clauses.join(' AND ')}`;
 
     const [totalRow, rows] = await Promise.all([
         first<{ n: number }>(c.env.DB, `SELECT COUNT(*) AS n FROM contributions ${where}`, ...params),
@@ -179,6 +187,18 @@ app.delete('/:id', requireUser, async (c) => {
     const row = await ownedContribution(c.env.DB, c.req.param('id'), user.id);
     if (row.status !== 'pending' && row.status !== 'failed') {
         throw ApiError.conflict('Only pending or failed contributions can be deleted', 'locked');
+    }
+    const inFlight = (await first<{ n: number }>(
+        c.env.DB,
+        `SELECT COUNT(*) AS n FROM payments
+         WHERE contribution_id = ? AND status IN ('pending','pending_verification')`,
+        row.id,
+    )) as { n: number } | null;
+    if (inFlight?.n) {
+        throw ApiError.conflict(
+            'A payment for this contribution is in progress — complete it or wait for the review before deleting',
+            'payment_in_flight',
+        );
     }
     await run(c.env.DB, `DELETE FROM contributions WHERE id = ?`, row.id);
     await audit(c.env, user.id, 'contribution.deleted', 'contribution', row.id);

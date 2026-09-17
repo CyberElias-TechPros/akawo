@@ -32,17 +32,18 @@ kobo internally.
 | `GET /api/users/dashboard` | — | summary, nextContribution (+overdue), recent lists, unread count, verification state |
 | `PUT /api/users/profile` | `{name?, phone?}` | strict field validation; unknown fields ignored |
 | `PUT /api/users/password` | `{currentPassword, newPassword}` | `mustReauthenticate: true`; revokes all refresh tokens |
-| `GET /api/contributions` | `?status&label&page` | paginated |
+| `GET /api/contributions` | `?status&label&page` | paginated; `label` is a case-insensitive search |
 | `POST /api/contributions` | `{amount, dueDate?, label?, frequency?}` | dueDate defaults to today; `once`\|`monthly` |
 | `GET /api/contributions/:id` | — | own only |
 | `PUT /api/contributions/:id` | `{label?, dueDate?, frequency?}` | only while pending/failed |
-| `DELETE /api/contributions/:id` | — | own, pending only |
-| `POST /api/payments/initiate` | `{contributionId}` | only own pending contributions; 409 if one is in flight |
+| `DELETE /api/contributions/:id` | — | own, pending/failed only; **409 `payment_in_flight`** while a payment is in progress |
+| `POST /api/payments/initiate` | `{contributionId}` | only own pending contributions; **409 `payment_in_flight`** if one is already in progress; settling a **monthly** contribution atomically creates the next month's installment (due +1 month, clamped to today) + `installment_scheduled` notification |
+| `GET /api/payments` | `?page&limit` | own payment history (paginated, with contribution labels) |
 | `GET /api/payments/:id` | — | own only |
 | `POST /api/payments/:id/charge` | `{cardNumber, expiry, cvv, name}` | mock gateway: `5396 0000 0000 0000` success, `…002` insufficient funds, `…003` blocked; other Luhn-valid + future-expiry cards succeed |
 | `POST /api/payments/:id/verify` | — | re-check a pending gateway reference |
 | `POST /api/payments/:id/proof` | multipart `file` | JPG/PNG/WEBP/HEIC/PDF ≤8 MB → `pending_verification` |
-| `GET /api/verification/status` | — | `isVerified` + latest record |
+| `GET /api/verification/status` | — | `isVerified` + latest record, incl. the user's **own signed media** URLs (face + liveness) |
 | `GET /api/verification/history` | — | last 20 |
 | `POST /api/verification/submit` | multipart `facialImage` + `livenessVideo` | face JPG/PNG/WEBP/HEIC ≤5 MB, video MP4/WEBM ≤50 MB; one pending at a time; resubmit allowed after rejection |
 | `GET /api/notifications` | `?unreadOnly&limit` | |
@@ -69,14 +70,22 @@ kobo internally.
 | `GET /api/admin/emails` | `?page` | outbox (all emails, incl. dev) |
 | `GET /api/admin/audit` | `?page` | every sensitive action |
 
+## Cron
+
+| Entry point | Schedule (recommended) | Effect |
+| ----------- | ---------------------- | ------ |
+| `scheduled()` in `src/index.ts` → `runDueReminders` | `0 7 * * *` (08:00 WAT) | in-app + email reminders for contributions due today / overdue, deduped to once per day per type. Add to `wrangler.jsonc`: `"cron": [{ "schedule": "0 7 * * *" }]` |
+
 ## Dev-only (LOCAL_DEV=true)
 
 | Method & path | Notes |
 | ------------- | ----- |
 | `POST /api/test/reset` | deletes all rows from the 10 data tables and clears KV rate-limit keys; used by the test suite |
+| `POST /api/test/run-cron` | runs the due-reminder pass on demand (tests / manual verification) |
 
 ## Error codes (selection)
 
 `validation` (422), `invalid_credentials` (401), `unauthorized` (401),
 `forbidden` (403), `not_found` (404), `conflict` / `already_reviewed` /
-`no_proof` / `not_pending` (409), `rate_limited` (429).
+`no_proof` / `not_pending` / `payment_in_flight` / `bvn_taken` (409),
+`rate_limited` (429).

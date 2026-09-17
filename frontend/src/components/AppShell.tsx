@@ -7,6 +7,7 @@ import { Logo } from './Logo';
 const NAV = [
     { to: '/dashboard', label: 'Dashboard', end: true },
     { to: '/dashboard/contributions', label: 'Contributions' },
+    { to: '/dashboard/history', label: 'History' },
     { to: '/dashboard/verification', label: 'Verification' },
     { to: '/dashboard/notifications', label: 'Notifications' },
 ];

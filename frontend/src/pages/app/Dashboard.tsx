@@ -133,7 +133,12 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="card">
-                        <h3>Recent payments</h3>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                            <h3>Recent payments</h3>
+                            <Link to="/dashboard/history" className="linkish" style={{ fontSize: 13 }}>
+                                View all →
+                            </Link>
+                        </div>
                         <p className="card__sub">How money moved in, most recent first.</p>
                         <div className="rowlist">
                             {data.recentPayments.length === 0 && (

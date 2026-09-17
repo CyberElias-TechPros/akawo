@@ -8,6 +8,7 @@ import { nowIso } from '../util/format';
 import { requireUser, userOf } from '../auth';
 import { audit, notify } from '../services/notify';
 import { runFaceCheck, runLivenessCheck } from '../services/identity';
+import { signedMediaUrl } from '../util/signed';
 
 const app = new Hono<AppEnv>();
 
@@ -32,6 +33,7 @@ const FACE_TYPES: Record<string, string> = {
     'image/jpeg': 'jpg',
     'image/png': 'png',
     'image/webp': 'webp',
+    'image/heic': 'heic',
 };
 const VIDEO_TYPES: Record<string, string> = {
     'video/mp4': 'mp4',
@@ -151,11 +153,19 @@ app.get('/status', requireUser, async (c) => {
         `SELECT * FROM verifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 1`,
         user.id,
     )) ?? null;
+    let media: { face: string; liveness: string } | null = null;
+    if (latest) {
+        const subject = { id: user.id, role: 'user' as const };
+        media = {
+            face: await signedMediaUrl(c.env, latest.face_key, subject),
+            liveness: await signedMediaUrl(c.env, latest.liveness_key, subject),
+        };
+    }
     return c.json({
         success: true,
         data: {
             isVerified: !!user.is_verified,
-            latest: latest ? serialize(latest) : null,
+            latest: latest ? { ...serialize(latest), media } : null,
         },
     });
 });

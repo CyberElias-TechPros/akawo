@@ -307,3 +307,66 @@ describe('payments — gateway verify + webhook', () => {
         expect([401, 403]).toContain(res.status);
     });
 });
+
+describe('payments — lifecycle guards & monthly recurrence', () => {
+    it('blocks a second initiation while a payment is in flight', async () => {
+        const u = await registerUser();
+        const contrib = await makeContribution(u.tokens.accessToken, 1000);
+        const first = await api('POST', '/api/payments/initiate', {
+            token: u.tokens.accessToken,
+            body: { contributionId: contrib.id },
+        });
+        expect(first.status).toBe(201);
+        const second = await api('POST', '/api/payments/initiate', {
+            token: u.tokens.accessToken,
+            body: { contributionId: contrib.id },
+        });
+        expect(second.status).toBe(409);
+        expect(second.body.error.code).toBe('payment_in_flight');
+    });
+
+    it('monthly contribution rolls into the next month when settled', async () => {
+        const u = await registerUser();
+        const due = new Date(Date.now() + 2 * 86400000).toISOString().slice(0, 10);
+        const created = await api('POST', '/api/contributions', {
+            token: u.tokens.accessToken,
+            body: { amount: 2000, dueDate: due, frequency: 'monthly', label: 'Rent share' },
+        });
+        expect(created.status).toBe(201);
+        const contrib = created.body.data.contribution as { id: string };
+
+        const init = await api('POST', '/api/payments/initiate', {
+            token: u.tokens.accessToken,
+            body: { contributionId: contrib.id },
+        });
+        expect(init.status).toBe(201);
+        const charge = await api('POST', `/api/payments/${init.body.data.payment.id}/charge`, {
+            token: u.tokens.accessToken,
+            body: GOOD_CARD,
+        });
+        expect(charge.status).toBe(200);
+        expect(charge.body.data.payment.status).toBe('completed');
+
+        // Original is paid, next installment created (same amount/label, due +1 month)
+        const original = await api('GET', `/api/contributions/${contrib.id}`, { token: u.tokens.accessToken });
+        expect(original.body.data.contribution.status).toBe('paid');
+
+        const list = await api('GET', '/api/contributions?label=Rent', { token: u.tokens.accessToken });
+        const next = (list.body.data.contributions as Array<Record<string, unknown>>).find((x) => x.id !== contrib.id);
+        expect(next).toBeTruthy();
+        expect(next?.frequency).toBe('monthly');
+        expect(next?.status).toBe('pending');
+        expect(next?.amount).toBe(2000);
+        const expected = (() => {
+            const d = new Date(due + 'T00:00:00Z');
+            d.setUTCMonth(d.getUTCMonth() + 1);
+            return d.toISOString().slice(0, 10);
+        })();
+        expect(next?.dueDate).toBe(expected);
+
+        // The user is told a new installment is scheduled
+        const listRes = await api('GET', '/api/notifications?limit=10', { token: u.tokens.accessToken });
+        const types = (listRes.body.data.notifications as Array<{ type: string }>).map((n) => n.type);
+        expect(types).toContain('installment_scheduled');
+    });
+});

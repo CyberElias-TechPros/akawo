@@ -82,6 +82,11 @@ export interface VerificationRecord {
     updatedAt: string;
 }
 
+/** The user's own latest verification, including their signed media. */
+export interface MyVerification extends VerificationRecord {
+    media: { face: string; liveness: string } | null;
+}
+
 export interface NotificationItem {
     id: string;
     type: string;

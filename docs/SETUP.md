@@ -102,11 +102,16 @@ cd worker && npm run db:studio   # browse the local database
    - `FRONTEND_ORIGIN` = your frontend's origin (email links + CORS)
    - keep `LOCAL_DEV=false`, `EXPOSE_RESET_LINKS=false`
    - `GATEWAY_MODE=mock` works indefinitely; switch to `paystack` when ready
-5. Deploy:
+5. Optional but recommended — daily due-date reminders. Add to
+   `wrangler.jsonc` (08:00 WAT):
+   ```jsonc
+   "cron": [{ "schedule": "0 7 * * *" }]
+   ```
+6. Deploy:
    ```bash
    npx wrangler deploy
    ```
-6. **Create the first admin (one-time).** Options:
+7. **Create the first admin (one-time).** Options:
    - Temporarily set `LOCAL_DEV=true`, restart the local env or use
      `wrangler dev`, call `POST /api/auth/bootstrap-admin` with
      `{name, email, password, bvn}`, then remove the var.

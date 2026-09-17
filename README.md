@@ -29,11 +29,12 @@ payments, the email outbox and a full audit log.
 
 ## Repository layout
 
-| Path        | What it is                                                        |
-| ----------- | ----------------------------------------------------------------- |
-| `worker/`   | Cloudflare Worker API + migrations + seed script + 64 tests       |
-| `frontend/` | Vite React SPA + Vercel config + smoke tests                      |
-| `docs/`     | `SETUP.md`, `API.md`, `CONTRIBUTING.md`                           |
+| Path          | What it is                                                        |
+| ------------- | ----------------------------------------------------------------- |
+| `worker/`     | Cloudflare Worker API + migrations + seed script + 69 tests       |
+| `frontend/`   | Vite React SPA + Vercel config + smoke tests                      |
+| `docs/`       | `SETUP.md`, `API.md`, `CONTRIBUTING.md`, `REPORT.md`              |
+| `analysis.md` | Gap analysis — every domain audited, gaps closed or documented   |
 
 ## Quick start (local)
 
@@ -56,8 +57,8 @@ Open http://localhost:5173. Demo logins (password `Akawo#Demo1` for all
 users, `Akawo#Admin1` for the admin): `admin@akawo.dev`,
 `chinedu@akawo.dev`, `amina@akawo.dev`, `tunde@akawo.dev`.
 
-Tests: `npm test` in `worker/` (64 integration tests) and `frontend/`
-(5 render/flow tests).
+Tests: `npm test` in `worker/` (69 integration tests) and `frontend/`
+(5 render/flow tests). CI runs both on every push/PR (`.github/workflows/ci.yml`).
 
 ## Production deployment
 
