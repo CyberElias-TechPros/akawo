@@ -1,0 +1,64 @@
+/**
+ * Akawo API — Cloudflare Worker configuration
+ *
+ * Local development:   npx wrangler dev          (D1/R2/KV all run locally)
+ * Migrations:          npx wrangler d1 execute akawo_db [--local]
+ * Studio:              npx wrangler d1 studio akawo_db --local
+ *
+ * Production secrets (set via `wrangler secret put`):
+ *   JWT_ACCESS_SECRET, JWT_REFRESH_SECRET (≥32 chars each)
+ *   PAYSTACK_SECRET_KEY, PAYSTACK_WEBHOOK_SECRET   (when GATEWAY_MODE=paystack)
+ *   RESEND_API_KEY                                (when MAIL_PROVIDER=resend)
+ *   FACE_API_KEY / FACE_API_URL                   (when FACE_MODE=api)
+ */
+{
+  "name": "akawo-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "rules": [
+    { "type": "Text", "globs": ["**/*.sql"], "fallthrough": false }
+  ],
+  "observability": {
+    "enabled": true
+  },
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "akawo_db",
+      "database_id": "00000000-0000-4000-8000-000000000001",
+      "migrations_dir": "migrations",
+      "migrations_table": "migrations"
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "BUCKET",
+      "bucket_name": "akawo-media"
+    }
+  ],
+
+  "kv_namespaces": [
+    {
+      "binding": "CACHE",
+      "id": "00000000000000000000000000000001"
+    }
+  ],
+
+  "vars": {
+    "APP_NAME": "Akawo",
+    "LOCAL_DEV": "false",
+    "FRONTEND_ORIGIN": "http://localhost:5173",
+    "ACCESS_TOKEN_TTL_MIN": "15",
+    "REFRESH_TOKEN_TTL_DAYS": "30",
+    "GATEWAY_MODE": "mock",
+    "PAYSTACK_CURRENCY": "NGN",
+    "MAIL_PROVIDER": "outbox",
+    "FACE_MODE": "manual",
+    "EXPOSE_RESET_LINKS": "false",
+    "ALLOWED_UPLOAD_ORIGIN": "akawo-media"
+  }
+}

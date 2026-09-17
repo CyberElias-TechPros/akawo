@@ -1,0 +1,30 @@
+{
+  "name": "akawo-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Akawo Platform API — Cloudflare Worker backend (D1 + R2 + KV)",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "db:init": "wrangler d1 create akawo_db",
+    "db:migrate:local": "wrangler d1 execute akawo_db --local",
+    "db:migrate:remote": "wrangler d1 execute akawo_db",
+    "db:studio": "wrangler d1 studio akawo_db --local",
+    "db:seed": "node scripts/seed.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.22.0",
+    "@cloudflare/workers-types": "^4.20250405.1",
+    "@types/node": "^22.10.0",
+    "typescript": "^5.6.3",
+    "vitest": "^4.1.11",
+    "wrangler": "^4.124.0"
+  }
+}
