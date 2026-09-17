@@ -24,3 +24,14 @@ node_modules/
 *.min.js
 *.min.css
 *.map
+
+# Cloudflare / worker local state
+.wrangler/
+.dev.vars
+worker/.dev.vars
+worker/dist/
+# env files
+.env
+*.local
+
+dist/
