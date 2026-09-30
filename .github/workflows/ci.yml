@@ -21,6 +21,15 @@ jobs:
           cache-dependency-path: worker/package-lock.json
       - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
+      # Integration tests boot the worker under miniflare, which reads
+      # secrets from .dev.vars (never committed). LOCAL_DEV=true enables
+      # the test-only /api/test/reset endpoint the suite requires.
+      - name: Write test .dev.vars
+        run: |
+          printf 'JWT_ACCESS_SECRET=%s\nJWT_REFRESH_SECRET=%s\nLOCAL_DEV=true\n' "$JWT_ACCESS_SECRET" "$JWT_REFRESH_SECRET" > .dev.vars
+        env:
+          JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
+          JWT_REFRESH_SECRET: ${{ secrets.JWT_REFRESH_SECRET }}
       - run: npm test
         env:
           JWT_ACCESS_SECRET: ${{ secrets.JWT_ACCESS_SECRET }}
