@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Akawo Platform API — Cloudflare Worker backend (D1 + R2 + KV)",
+  "description": "Akawo Platform API \u00e2\u20ac\u201d Cloudflare Worker backend (D1 + R2 + KV)",
   "scripts": {
     "dev": "wrangler dev --port 8787",
     "deploy": "wrangler deploy",
@@ -21,10 +21,10 @@
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "^0.22.0",
-    "@cloudflare/workers-types": "^4.20250405.1",
+    "@cloudflare/workers-types": "^5.20260815.1",
     "@types/node": "^22.10.0",
     "typescript": "^5.6.3",
     "vitest": "^4.1.11",
-    "wrangler": "^4.124.0"
+    "wrangler": "^4.143.0"
   }
 }

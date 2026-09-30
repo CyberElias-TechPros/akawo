@@ -1,0 +1,49 @@
+name: Deploy backend
+
+# Deploys worker/akawo-api on push to master (Cyberelias.tk account).
+# Single migration file (0001_init.sql); d1_migrations tracking table is
+# `migrations`. Requires repo secrets CF_API_TOKEN + CF_ACCOUNT_ID.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "worker/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-backend
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preflight secrets
+        run: |
+          if [ -z "$CLOUDFLARE_API_TOKEN" ] || [ -z "$CLOUDFLARE_ACCOUNT_ID" ]; then
+            echo "::error::Missing CF_API_TOKEN / CF_ACCOUNT_ID repo secrets (Cyberelias.tk account)."
+            exit 1
+          fi
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci --no-fund --no-audit
+        working-directory: worker
+      - run: npm run typecheck
+        working-directory: worker
+      - name: Deploy Worker
+        run: npx wrangler deploy --config wrangler.production.toml
+        working-directory: worker
+      - name: Verify health
+        run: |
+          body="$(curl -fsS https://akawo-api.cyberelias-tk.workers.dev/api/health)"
+          echo "$body"
+          echo "$body" | grep -q '"status":"ok"' || { echo "::error::akawo-api health check failed"; exit 1; }

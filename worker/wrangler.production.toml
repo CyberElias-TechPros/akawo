@@ -1,0 +1,40 @@
+# Production config for akawo-api (Cyberelias.tk account). Mirrors the live
+# worker bindings. Secrets (JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, …) are
+# set via `wrangler secret put --config` and never written here.
+name = "akawo-api"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+account_id = "b7399f904cf2b63772526dd43507f630"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "akawo_db"
+database_id = "1039f149-851e-4950-9026-5aa4b17b283e"
+migrations_dir = "migrations"
+migrations_table = "migrations"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "akawo-media"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "653725fee4734265bf0fb0844f8b56f0"
+
+[vars]
+APP_NAME = "Akawo"
+LOCAL_DEV = "false"
+FRONTEND_ORIGIN = "https://akawo.freegameplay.site,https://akawo-cybereliastkgmailcoms-projects.vercel.app"
+ACCESS_TOKEN_TTL_MIN = "15"
+REFRESH_TOKEN_TTL_DAYS = "30"
+GATEWAY_MODE = "mock"
+PAYSTACK_CURRENCY = "NGN"
+MAIL_PROVIDER = "outbox"
+FACE_MODE = "manual"
+EXPOSE_RESET_LINKS = "false"
+ALLOWED_UPLOAD_ORIGIN = "akawo-media"
+
+[observability]
+enabled = true
