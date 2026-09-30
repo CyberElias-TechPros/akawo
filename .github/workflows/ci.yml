@@ -36,6 +36,9 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+      # Lockfile is generated with npm 11 (nested optional deps); the npm 10
+      # bundled with Node 22 rejects `npm ci` on it. Align before installing.
+      - run: npm install -g npm@11
       - run: npm ci --no-audit --no-fund
       - run: npm run typecheck
       - run: npm test
