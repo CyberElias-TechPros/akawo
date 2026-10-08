@@ -27,5 +27,5 @@ jobs:
         run: npx -y wrangler@latest deploy --env production
       - name: Verify health
         run: |
-          body="$(curl -fsS https://gainhub-api-production.cyberelias-tk.workers.dev/api/health)"
+          body="$(curl -fsS https://gainhub-api-production.cyberelias-tk.workers.dev/health)"
           echo "$body"; echo "$body" | grep -q '"status":"ok"'
