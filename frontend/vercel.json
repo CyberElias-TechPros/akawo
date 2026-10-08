@@ -8,9 +8,21 @@
       "source": "/api/(.*)",
       "destination": "https://akawo-api.cyberelias-tk.workers.dev/api/$1"
     },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "/index.html"
-    }
+    { "source": "/login", "destination": "/index.html" },
+    { "source": "/register", "destination": "/index.html" },
+    { "source": "/forgot-password", "destination": "/index.html" },
+    { "source": "/reset-password", "destination": "/index.html" },
+    { "source": "/verify-email", "destination": "/index.html" },
+    { "source": "/contributions", "destination": "/index.html" },
+    { "source": "/contribute/:id", "destination": "/index.html" },
+    { "source": "/verification", "destination": "/index.html" },
+    { "source": "/history", "destination": "/index.html" },
+    { "source": "/profile", "destination": "/index.html" },
+    { "source": "/notifications", "destination": "/index.html" },
+    { "source": "/users", "destination": "/index.html" },
+    { "source": "/verifications", "destination": "/index.html" },
+    { "source": "/payments", "destination": "/index.html" },
+    { "source": "/emails", "destination": "/index.html" },
+    { "source": "/audit", "destination": "/index.html" }
   ]
 }
