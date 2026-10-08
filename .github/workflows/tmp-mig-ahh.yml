@@ -1,0 +1,37 @@
+name: tmp-mig-ahh
+on: workflow_dispatch
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+    steps:
+      - name: Clone target repo
+        run: git clone --depth 1 https://x-access-token:${{ secrets.MIGRATION_PAT }}@github.com/CyberElias-TechPros/agently-home-hub.git target
+      - name: Quarantine dev-only wipe migration (NEVER apply 0000_drop.sql)
+        working-directory: target/workers
+        run: |
+          mkdir -p /tmp/quarantine
+          mv migrations/0000_drop.sql /tmp/quarantine/0000_drop.sql
+          ls migrations/
+      - name: Show applied migrations
+        working-directory: target/workers
+        run: npx -y wrangler@latest d1 migrations list agently-hub-db --remote
+      - name: Apply outstanding migrations (0001-0003 only)
+        working-directory: target/workers
+        run: npx -y wrangler@latest d1 migrations apply agently-hub-db --remote
+      - name: Install deps and deploy worker
+        working-directory: target/workers
+        run: |
+          npm ci --no-fund --no-audit
+          npx -y wrangler@latest deploy 2>&1 | tee /tmp/deploy.log; test ${PIPESTATUS[0]} -eq 0
+          grep -oE 'https://[a-z0-9-]+\.[a-z0-9-]+\.workers\.dev' /tmp/deploy.log | head -1
+      - name: Verify health
+        run: |
+          for path in /health /api/health; do
+            if body="$(curl -fsS "https://agently-home-hub-api.cyberelias-tk.workers.dev$path")"; then
+              echo "$path => $body"; exit 0
+            fi
+          done
+          echo "::error::no health endpoint answered"; exit 1
