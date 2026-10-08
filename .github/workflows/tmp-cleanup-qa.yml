@@ -1,0 +1,22 @@
+name: tmp-cleanup-qa
+on: workflow_dispatch
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+    steps:
+      - name: Delete QA test user from gainhub-production
+        run: |
+          U="ddc6024b-ef1a-4e06-8278-a73a96ff3be3"
+          npx -y wrangler@latest d1 execute gainhub-production --remote --command "DELETE FROM sessions WHERE user_id='$U';"
+          npx -y wrangler@latest d1 execute gainhub-production --remote --command "DELETE FROM users WHERE id='$U';"
+          npx -y wrangler@latest d1 execute gainhub-production --remote --command "SELECT count(*) AS remaining FROM users WHERE id='$U';"
+      - name: Delete QA test user from akawo_db
+        run: |
+          U="dc5db425-e576-45d1-b1d8-daf503d0e973"
+          npx -y wrangler@latest d1 execute akawo_db --remote --command "DELETE FROM refresh_tokens WHERE user_id='$U';"
+          npx -y wrangler@latest d1 execute akawo_db --remote --command "DELETE FROM email_verifications WHERE user_id='$U';"
+          npx -y wrangler@latest d1 execute akawo_db --remote --command "DELETE FROM users WHERE id='$U';"
+          npx -y wrangler@latest d1 execute akawo_db --remote --command "SELECT count(*) AS remaining FROM users WHERE id='$U';"
