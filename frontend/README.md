@@ -45,3 +45,4 @@ npm run build        # typecheck + production bundle → dist/
   preview hosts can load the app; it has no effect on the built bundle.
 - `public/sitemap.xml` ships with a placeholder domain — replace it with
   your production domain after deploy.
+
