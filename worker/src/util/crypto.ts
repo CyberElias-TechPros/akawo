@@ -10,7 +10,7 @@
 const enc = new TextEncoder();
 const dec = new TextDecoder();
 
-const PBKDF2_ITERATIONS = 210_000;
+const PBKDF2_ITERATIONS = 100_000;
 
 const bytesToB64url = (buf: ArrayBuffer | Uint8Array): string => {
     const bytes = buf instanceof Uint8Array ? buf : new Uint8Array(buf);

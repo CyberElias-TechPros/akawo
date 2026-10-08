@@ -162,7 +162,7 @@ app.post('/login', async (c) => {
 
     // Constant-shape failure: hash-check a dummy so timing doesn't reveal existence.
     const dummyHash =
-        'pbkdf2-sha256$210000$00112233445566778899$' + 'ab'.repeat(32);
+        'pbkdf2-sha256$100000$00112233445566778899$' + 'ab'.repeat(32);
     if (!user || !(await verifyPassword(password, user?.password_hash ?? dummyHash))) {
         throw new ApiError(401, INVALID_CREDENTIALS, 'invalid_credentials');
     }
