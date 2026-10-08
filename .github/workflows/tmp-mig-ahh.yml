@@ -36,6 +36,33 @@ jobs:
       - name: Apply outstanding migrations (0001-0003 only)
         working-directory: target/workers
         run: npx -y wrangler@latest d1 migrations apply agently-hub-worker-db --remote
+      - name: Ensure KV namespace + JWT secrets
+        run: |
+          KVID=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" | jq -r '.result[] | select(.title | contains("agently-hub")) | .id' | head -1)
+          if [ -z "$KVID" ]; then
+            npx -y wrangler@latest kv namespace create agently-hub-cache
+            KVID=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/storage/kv/namespaces" | jq -r '.result[] | select(.title | contains("agently-hub")) | .id' | head -1)
+          fi
+          echo "KVID=$KVID"; test -n "$KVID"
+          sed -i -E "s/^id = \"[^\"]+\"/id = \"$KVID\"/" target/workers/wrangler.toml
+          git -C target config user.name "CyberElias-TechPros"
+          git -C target config user.email "info@techpros.com.ng"
+          git -C target add workers/wrangler.toml
+          git -C target commit -m "chore: point CACHE_KV at provisioned namespace" || echo "already filled, continuing"
+          git -C target push https://x-access-token:${{ secrets.MIGRATION_PAT }}@github.com/CyberElias-TechPros/agently-home-hub.git HEAD:main
+          for pair in "JWT_SECRET:TMP_AHH_JWT" "JWT_REFRESH_SECRET:TMP_AHH_REFRESH"; do
+            NAME="${pair%%:*}"; VAR="${pair##*:}"; VAL="${!VAR}"
+            HAVE=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/agently-home-hub-api/secrets" | grep -c "$NAME" || true)
+            echo "$NAME present=$HAVE"
+            if [ "$HAVE" = "0" ]; then
+              curl -s -X PUT "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/workers/scripts/agently-home-hub-api/secrets" \
+                -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" -H "Content-Type: application/json" \
+                --data "$(jq -n --arg n "$NAME" --arg t "$VAL" '{name:$n,text:$t,type:"secret_text"}')"
+            fi
+          done
+        env:
+          TMP_AHH_JWT: ${{ secrets.TMP_AHH_JWT }}
+          TMP_AHH_REFRESH: ${{ secrets.TMP_AHH_REFRESH }}
       - name: Install deps and deploy worker
         working-directory: target/workers
         run: |
