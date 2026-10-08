@@ -14,9 +14,7 @@ jobs:
       - name: Apply schema+seed only if database is empty
         working-directory: target
         run: |
-          N=$(npx -y wrangler@latest d1 execute som-connect-db --remote --json --command "SELECT count(*) AS n FROM sqlite_master WHERE type='table' AND name NOT LIKE 'd1_%' AND name NOT LIKE '_cf_%';" | grep -oE '"n": [0-9]+' | grep -oE '[0-9]+')
-          echo "user_tables=$N"
-          if [ "$N" = "0" ]; then
+          if npx -y wrangler@latest d1 execute som-connect-db --remote --command "SELECT 'DB_IS_EMPTY' AS marker WHERE (SELECT count(*) FROM sqlite_master WHERE type='table' AND name NOT LIKE 'd1_%' AND name NOT LIKE '_cf_%') = 0;" | grep -q DB_IS_EMPTY; then
             npx -y wrangler@latest d1 execute som-connect-db --remote --file=worker/src/db/schema.sql
             npx -y wrangler@latest d1 execute som-connect-db --remote --file=worker/src/db/seed.sql
           else
@@ -24,9 +22,9 @@ jobs:
           fi
       - name: Ensure R2 + queue exist
         run: |
-          npx -y wrangler@latest r2 bucket list --json | grep -q som-connect-storage \
+          npx -y wrangler@latest r2 bucket list | grep -q som-connect-storage \
             || npx -y wrangler@latest r2 bucket create som-connect-storage
-          npx -y wrangler@latest queues list --json | grep -q som-connect-queue \
+          npx -y wrangler@latest queues list | grep -q som-connect-queue \
             || npx -y wrangler@latest queues create som-connect-queue
       - name: Ensure JWT_SECRET (only if absent)
         run: |

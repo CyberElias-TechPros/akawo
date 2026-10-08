@@ -15,6 +15,15 @@ jobs:
           mkdir -p /tmp/quarantine
           mv migrations/0000_drop.sql /tmp/quarantine/0000_drop.sql
           ls migrations/
+      - name: Point config at live database and push back
+        run: |
+          sed -i 's/3d2dffbe-06b5-40c7-93c6-278f7541227a/3ce941d4-ebea-42fb-b389-17724802f4d8/' target/workers/wrangler.toml
+          grep -q 3d2dffbe target/workers/wrangler.toml && { echo "::error::ghost ID remains"; exit 1; } || true
+          git -C target config user.name "CyberElias-TechPros"
+          git -C target config user.email "info@techpros.com.ng"
+          git -C target add workers/wrangler.toml
+          git -C target commit -m "chore: point D1 at live agently-home-hub-db"
+          git -C target push https://x-access-token:${{ secrets.MIGRATION_PAT }}@github.com/CyberElias-TechPros/agently-home-hub.git HEAD:main
       - name: Show applied migrations
         working-directory: target/workers
         run: npx -y wrangler@latest d1 migrations list agently-hub-db --remote

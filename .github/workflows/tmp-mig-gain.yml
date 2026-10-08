@@ -14,7 +14,7 @@ jobs:
         run: npm ci --no-fund --no-audit
       - name: Ensure R2 bucket
         run: |
-          npx -y wrangler@latest r2 bucket list --json | grep -q gainhub-evidence-production \
+          npx -y wrangler@latest r2 bucket list | grep -q gainhub-evidence-production \
             || npx -y wrangler@latest r2 bucket create gainhub-evidence-production
       - name: Show applied migrations
         working-directory: target
