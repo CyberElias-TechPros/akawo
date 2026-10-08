@@ -15,14 +15,20 @@ jobs:
           mkdir -p /tmp/quarantine
           mv migrations/0000_drop.sql /tmp/quarantine/0000_drop.sql
           ls migrations/
-      - name: Point config at live database and push back
+      - name: Provision fresh worker database (app DB holds another schema; do not touch it)
         run: |
-          sed -i 's/3d2dffbe-06b5-40c7-93c6-278f7541227a/3ce941d4-ebea-42fb-b389-17724802f4d8/' target/workers/wrangler.toml
-          grep -q 3d2dffbe target/workers/wrangler.toml && { echo "::error::ghost ID remains"; exit 1; } || true
+          DBID=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database" | jq -r '.result[] | select(.name=="agently-hub-worker-db") | .uuid' | head -1)
+          if [ -z "$DBID" ]; then
+            npx -y wrangler@latest d1 create agently-hub-worker-db
+            DBID=$(curl -s -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database" | jq -r '.result[] | select(.name=="agently-hub-worker-db") | .uuid' | head -1)
+          fi
+          echo "DBID=$DBID"; test -n "$DBID"
+          sed -i -E "s/database_id = \"[^\"]+\"/database_id = \"$DBID\"/" target/workers/wrangler.toml
+          grep "$DBID" target/workers/wrangler.toml
           git -C target config user.name "CyberElias-TechPros"
           git -C target config user.email "info@techpros.com.ng"
           git -C target add workers/wrangler.toml
-          git -C target commit -m "chore: point D1 at live agently-home-hub-db"
+          git -C target commit -m "chore: point D1 at dedicated worker database" || echo "nothing to commit"
           git -C target push https://x-access-token:${{ secrets.MIGRATION_PAT }}@github.com/CyberElias-TechPros/agently-home-hub.git HEAD:main
       - name: Show applied migrations
         working-directory: target/workers
