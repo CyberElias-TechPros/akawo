@@ -1,0 +1,14 @@
+*.iml
+.gradle
+build/
+!src/main/java/com/akawo/app/BuildConfig.java
+.captures
+.externalNativeBuild
+.cxx/
+local.properties
+*.keystore
+*.jks
+*.pk12
+.security
+.DS_Store
+*.keystore.bks

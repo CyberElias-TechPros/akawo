@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <!-- Keep auth tokens and media out of Android backup / data extraction. -->
+    <shared-preferences name="akawo_secure" prefix="false">
+        <exclude domain="shared-preferences" path=".*" />
+    </shared-preferences>
+</data-extraction-rules>
