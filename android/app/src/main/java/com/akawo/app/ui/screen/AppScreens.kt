@@ -27,6 +27,60 @@ import com.akawo.app.ui.viewmodel.*
 import java.io.File
 
 /* ==================================================================== */
+/* Splash                                                               */
+/* ==================================================================== */
+
+@Composable
+fun SplashScreen(
+    viewModel: SplashViewModel = hiltViewModel(),
+    onSignedIn: () -> Unit,
+    onNotSignedIn: () -> Unit,
+) {
+    val state by viewModel.state.collectAsState()
+    LaunchedEffect(state.resource) {
+        when (state.resource) {
+            is com.akawo.app.ui.state.Resource.Success -> {
+                if (state.resource.data == true) onSignedIn() else onNotSignedIn()
+            }
+            is com.akawo.app.ui.state.Resource.Error -> onNotSignedIn()
+            is com.akawo.app.ui.state.Resource.Loading -> Unit
+        }
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center,
+    ) {
+        androidx.compose.material3.Icon(
+            imageVector = androidx.compose.material3.Icons.Default.AccountBalanceWallet,
+            contentDescription = "Akawo",
+            modifier = Modifier.size(64.dp, 64.dp),
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(text = "Akawo", style = MaterialTheme.typography.headlineLarge, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(text = "Nigerian savings & contributions", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(modifier = Modifier.height(32.dp))
+        when (val r = state.resource) {
+            is com.akawo.app.ui.state.Resource.Loading -> {
+                AppLoading(modifier = Modifier.size(40.dp, 40.dp))
+            }
+            is com.akawo.app.ui.state.Resource.Error -> {
+                AppError(message = r.message ?: "Failed to restore session.")
+                Spacer(modifier = Modifier.height(12.dp))
+                AppButton(onClick = { viewModel.checkSession() }, variant = ButtonVariant.Outlined, label = "Try again")
+            }
+            is com.akawo.app.ui.state.Resource.Success -> Unit
+        }
+    }
+}
+
+/* ==================================================================== */
 /* App tab shell + bottom navigation                                    */
 /* ==================================================================== */
 

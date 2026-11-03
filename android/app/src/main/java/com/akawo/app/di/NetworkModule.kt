@@ -14,7 +14,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -32,21 +31,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(
-        @ApplicationContext context: Context,
-        api: AkawoApi,
-        tokenHolder: TokenHolder,
-    ): OkHttpClient {
-        return OkHttpClient.Builder()
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.NONE
-            })
-            .apply { AuthInterceptor.install(this, context, api, tokenHolder) }
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(30, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
-            .retryOnConnectionFailure(true)
-            .build()
+    fun provideTokenHolder(tokenStore: SecureTokenStore): TokenHolder {
+        return TokenHolder(tokenStore).also { it.initFromStore() }
     }
 
     @Provides
@@ -56,6 +42,45 @@ object NetworkModule {
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .serializeNulls()
             .create()
+    }
+
+    /**
+     * Plain client used solely for the refresh-token rotation. No auth interceptor — avoids a
+     * circular dependency with the main client.
+     */
+    @Provides
+    @Singleton
+    fun provideRefreshClient(): OkHttpClient {
+        return OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(
+        tokenHolder: TokenHolder,
+        refreshClient: OkHttpClient,
+        gson: Gson,
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .apply {
+                AuthInterceptor.install(
+                    this,
+                    tokenHolder,
+                    refreshClient,
+                    com.akawo.app.BuildConfig.API_BASE_URL,
+                    gson,
+                )
+            }
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .retryOnConnectionFailure(true)
+            .build()
     }
 
     @Provides

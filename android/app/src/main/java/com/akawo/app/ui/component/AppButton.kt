@@ -80,11 +80,11 @@ fun IconButton(
     modifier: Modifier = Modifier,
     contentDescription: String,
 ) {
-    IconButton(
+    androidx.compose.material3.IconButton(
         onClick = { if (enabled) onClick() },
         enabled = enabled,
         modifier = modifier,
-        colors = IconButtonDefaults.iconButtonColors(
+        colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
             contentColor = if (enabled) MaterialTheme.colorScheme.onSurfaceVariant else Color(0xFFC9D4CE),
         ),
     ) {

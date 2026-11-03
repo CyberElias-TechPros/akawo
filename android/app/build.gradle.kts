@@ -130,6 +130,9 @@ dependencies {
     // Biometric prompt (app unlock)
     implementation(libs.androidx.biometric)
 
+    // EncryptedSharedPreferences (Keystore-backed refresh-token storage)
+    implementation(libs.androidx.security.crypto)
+
     // Custom tabs (deep links / email magic links)
     implementation(libs.androidx.browser)
 

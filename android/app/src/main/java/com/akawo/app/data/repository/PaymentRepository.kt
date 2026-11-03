@@ -17,8 +17,8 @@ class PaymentRepository @Inject constructor(
 ) : BaseRepository(apiClient) {
 
     suspend fun initiate(contributionId: String): Payment {
-        return execute { api.initiatePayment(InitiatePaymentRequest(contributionId)) }?.payment
-            ?: throw ApiException(500, "empty", "No payment returned.")
+        val resp = execute { api.initiatePayment(InitiatePaymentRequest(contributionId)) }
+        return resp.payment ?: throw ApiException(500, "empty", "No payment returned.")
     }
 
     suspend fun list(page: Int, limit: Int): PaymentsResponse {
@@ -39,7 +39,7 @@ class PaymentRepository @Inject constructor(
         name: String,
     ): Payment {
         val response = execute { api.charge(paymentId, ChargeRequest(cardNumber, expiry, cvv, name)) }
-        return response ?: throw ApiException(500, "empty", "No payment result returned.")
+        return response.payment ?: throw ApiException(500, "empty", "No payment result returned.")
     }
 
     suspend fun verify(paymentId: String): Payment {
@@ -53,7 +53,7 @@ class PaymentRepository @Inject constructor(
             MediaType.parse("application/octet-stream")
         )
         val part = MultipartBody.Part.createFormData("file", file.name, requestFile)
-        return execute { api.uploadProof(paymentId, part) }?.payment
-            ?: throw ApiException(500, "empty", "No payment returned after upload.")
+        val resp = execute { api.uploadProof(paymentId, part) }
+        return resp.payment ?: throw ApiException(500, "empty", "No payment returned after upload.")
     }
 }

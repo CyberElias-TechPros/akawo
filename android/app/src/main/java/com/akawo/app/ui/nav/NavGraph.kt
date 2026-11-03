@@ -28,8 +28,28 @@ fun NavGraph(authViewModel: AuthViewModel) {
     val isAdmin by authViewModel.isAdmin.collectAsState()
     val deepLink by DeepLinkHolder.intent.asStateFlow().collectAsState()
 
+    // Restore any existing session on startup.
+    LaunchedEffect(Unit) {
+        authViewModel.checkSession()
+    }
+
     LaunchedEffect(deepLink) {
         deepLink?.let { navController.handleDeepLink(it) }
+    }
+
+    // When a session becomes established, drive the user out of auth routes.
+    LaunchedEffect(session) {
+        if (session is AuthViewModel.SessionState.SignedIn) {
+            val current = navController.currentBackStackEntry?.destination?.route
+            when (current) {
+                Routes.Login, Routes.Register, Routes.ForgotPassword,
+                Routes.ResetPassword, Routes.VerifyEmail, Routes.Root -> {
+                    navController.navigate(Routes.Dashboard) {
+                        popUpTo(Routes.Root) { inclusive = true }
+                    }
+                }
+            }
+        }
     }
 
     AkawoTheme {
