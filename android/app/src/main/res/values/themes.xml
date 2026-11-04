@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.Akawo" parent="android:Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/akawo_gold</item>
+        <item name="colorSecondary">@color/akawo_gold</item>
+    </style>
+
+    <style name="Theme.Akawo.Splash" parent="Theme.Akawo">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="postSplashScreenTheme">@style/Theme.Akawo</item>
+    </style>
+</resources>

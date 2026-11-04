@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Akawo</string>
+
+    <!-- Auth -->
+    <string name="sign_in">Sign in</string>
+    <string name="signing_in">Signing in…</string>
+    <string name="welcome_back">Welcome back</string>
+    <string name="sign_in_sub">Enter your details to continue to your savings.</string>
+    <string name="create_account">Create account</string>
+    <string name="creating_account">Creating your account…</string>
+    <string name="create_your_account">Create your account</string>
+    <string name="register_sub">It takes about a minute. You’ll need your Bank Verification Number (BVN).</string>
+    <string name="already_have_account">Already have an account?</string>
+    <string name="new_to_akawo">New to Akawo?</string>
+    <string name="sign_in_link">Sign in</string>
+    <string name="create_account_link">Create an account</string>
+    <string name="back_to_home">Back to home</string>
+    <string name="forgot_password">Forgot password?</string>
+    <string name="reset_password">Reset password</string>
+    <string name="verify_email">Verify email</string>
+    <string name="account_suspended">Your account has been suspended. Contact support for assistance.</string>
+    <string name="password_changed_signout">Password updated. Sign in again with your new password.</string>
+
+    <!-- Fields -->
+    <string name="field_email">Email address</string>
+    <string name="field_password">Password</string>
+    <string name="field_name">Full name</string>
+    <string name="field_bvn">BVN</string>
+    <string name="field_phone">Phone number (optional)</string>
+    <string name="field_amount">Amount (₦)</string>
+    <string name="field_due_date">Due date</string>
+    <string name="field_label">Label</string>
+    <string name="field_current_password">Current password</string>
+    <string name="field_new_password">New password</string>
+    <string name="field_confirm_password">Confirm new password</string>
+    <string name="hint_email">e.g. chinedu@akawo.dev</string>
+    <string name="hint_bvn">e.g. 22190000000</string>
+    <string name="hint_amount">e.g. 25000</string>
+    <string name="hint_label">e.g. School fees</string>
+    <string name="hint_phone">e.g. 0803 123 4567</string>
+    <string name="hint_password_rule">At least 10 chars, with upper, lower, number and symbol.</string>
+    <string name="hint_password_new">At least 8 characters, with a letter and a number.</string>
+
+    <!-- Navigation / tabs -->
+    <string name="nav_dashboard">Dashboard</string>
+    <string name="nav_contributions">Contributions</string>
+    <string name="nav_verification">Verification</string>
+    <string name="nav_history">History</string>
+    <string name="nav_profile">Profile</string>
+    <string name="nav_notifications">Notifications</string>
+    <string name="nav_admin">Admin</string>
+
+    <!-- Dashboard -->
+    <string name="dashboard">Dashboard</string>
+    <string name="total_contributed">Total contributed</string>
+    <string name="pending_amount">Pending amount</string>
+    <string name="monthly_commitments">Monthly commitments</string>
+    <string name="next_contribution">Next contribution</string>
+    <string name="pay_now">Pay now</string>
+    <string name="no_pending_contributions">No pending contributions</string>
+    <string name="all_paid_up">You’re all paid up. Start a new contribution whenever you’re ready.</string>
+    <string name="new_contribution">New contribution</string>
+    <string name="recent_contributions">Recent contributions</string>
+    <string name="nothing_yet">Nothing yet — create your first contribution.</string>
+    <string name="recent_payments">Recent payments</string>
+    <string name="view_all">View all →</string>
+    <string name="no_payments_yet">No payments yet.</string>
+    <string name="paid">Paid</string>
+    <string name="pending">Pending</string>
+    <string name="overdue">Overdue</string>
+    <string name="failed">Failed</string>
+    <string name="proof_in_review">Proof in review</string>
+    <string name="identity">Identity</string>
+    <string name="your_trust_level">Your trust level on Akawo.</string>
+    <string name="kyc_verified">KYC verified</string>
+    <string name="kyc_not_verified">KYC not yet verified</string>
+    <string name="email_verified">Email verified</string>
+    <string name="email_not_verified">Email not verified</string>
+    <string name="start_verification">Start verification</string>
+    <string name="view_verification">View verification</string>
+    <string name="notifications">Notifications</string>
+    <string name="unread">unread</string>
+    <string name="caught_up">You’re all caught up.</string>
+    <string name="open_inbox">Open inbox</string>
+    <string name="admin_console">Admin console</string>
+    <string name="open_admin">Open admin</string>
+    <string name="admin_access">You have administrator access to Akawo.</string>
+
+    <!-- Contributions -->
+    <string name="your_contributions">Your contributions</string>
+    <string name="contributions_sub">Every amount you’ve committed to, in one place. Pay by card or upload transfer proof when you’re ready.</string>
+    <string name="new_contribution_title">New contribution</string>
+    <string name="min_max">Minimum ₦1.00 · maximum ₦10,000,000</string>
+    <string name="creating">Creating…</string>
+    <string name="create_contribution">Create contribution</string>
+    <string name="monthly_hint">Paying an installment automatically schedules the next month.</string>
+    <string name="edit_contribution">Edit contribution</string>
+    <string name="save_changes">Save changes</string>
+    <string name="cancel">Cancel</string>
+    <string name="delete">Delete</string>
+    <string name="delete_confirm">Delete “%1$s” (₦%2$s)? This cannot be undone.</string>
+    <string name="contribution_deleted">Contribution deleted</string>
+    <string name="contribution_created">Contribution created</string>
+    <string name="contribution_updated">Contribution updated</string>
+    <string name="frequency_once">One-off</string>
+    <string name="frequency_monthly">Monthly</string>
+    <string name="status_all">All statuses</string>
+    <string name="filter_label">Filter by label…</string>
+    <string name="page_of">Page %1$d of %2$d</string>
+    <string name="newer">← Newer</string>
+    <string name="older">Older →</string>
+
+    <!-- Pay -->
+    <string name="contribute">Contribute</string>
+    <string name="make_a_payment">Make a payment</string>
+    <string name="pay_by_card">Pay by card</string>
+    <string name="transfer_proof">Transfer proof</string>
+    <string name="card_number">Card number</string>
+    <string name="expiry">Expiry (MM/YY)</string>
+    <string name="cvv">CVV</string>
+    <string name="name_on_card">Name on card</string>
+    <string name="choose_transfer_screenshot">Choose your transfer screenshot</string>
+    <string name="proof_formats">JPG, PNG, WEBP, HEIC or PDF · up to 8 MB</string>
+    <string name="upload_proof">Upload proof for review</string>
+    <string name="uploading">Uploading…</string>
+    <string name="processing">Processing…</string>
+    <string name="try_again">Try again</string>
+    <string name="later">Later</string>
+    <string name="back_to_dashboard">Back to dashboard</string>
+    <string name="back_to_contributions">Back to contributions</string>
+    <string name="payment_complete">Payment complete</string>
+    <string name="payment_complete_body">Your contribution is now marked as paid. A receipt email is on its way.</string>
+    <string name="proof_received">Proof received</string>
+    <string name="proof_received_body">Our team will review your transfer screenshot and confirm it — you’ll be notified with the outcome.</string>
+    <string name="not_this_time">Not this time</string>
+    <string name="where_this_stands">Where this stands</string>
+    <string name="contribution_created_ts">Contribution created</string>
+    <string name="payment_started">Payment started</string>
+    <string name="confirmed_as_paid">Confirmed as paid</string>
+    <string name="paid_in_full">Paid in full</string>
+    <string name="awaiting_payment">Awaiting payment</string>
+    <string name="already_paid">Already paid</string>
+    <string name="confirmed_on">Confirmed on %1$s</string>
+    <string name="reference">Reference: %1$s</string>
+
+    <!-- Verification -->
+    <string name="identity_verification">Identity verification</string>
+    <string name="verification_sub">One-time check: a clear facial photo and a short liveness clip. Our team reviews it, then your account is fully trusted.</string>
+    <string name="your_status">Your status</string>
+    <string name="where_you_stand">Exactly where you stand — no guessing.</string>
+    <string name="verified">Verified</string>
+    <string name="under_review">Under review</string>
+    <string name="needs_retry">Needs a retry</string>
+    <string name="not_started">Not started</string>
+    <string name="rejected_reason">Why it was rejected:</string>
+    <string name="verified_on">Verified on %1$s. Nothing more to do here.</string>
+    <string name="submitted_on">Submitted %1$s. We usually review within one business day — you’ll get a notification either way.</string>
+    <string name="view_my_submission">View my submission</string>
+    <string name="history">History</string>
+    <string name="submit_your_verification">Submit your verification</string>
+    <string name="submit_again">Submit again</string>
+    <string name="verification_sub_sub">Face the camera in good light. For the video, hold your phone ~30 cm away and slowly turn your head left, right, up, down.</string>
+    <string name="choose_facial_photo">Choose a clear front-facing photo</string>
+    <string name="facial_photo_hint">Neutral expression, no filters or heavy sunglasses</string>
+    <string name="choose_liveness_video">Choose your liveness clip</string>
+    <string name="liveness_video_hint">Turn your head slowly in all directions</string>
+    <string name="submit_for_review">Submit for review</string>
+    <string name="resubmit_verification">Resubmit verification</string>
+    <string name="uploading_verification">Uploading…</string>
+    <string name="submitted_for_review">Verification submitted for review</string>
+    <string name="your_submission">Your submission</string>
+    <string name="facial_photo">Facial photo</string>
+    <string name="liveness_video">Liveness video</string>
+    <string name="fully_verified">You’re fully verified</string>
+    <string name="being_reviewed">Your verification is being reviewed</string>
+    <string name="verified_body">Your identity has been confirmed. This keeps your contributions and proofs protected.</string>
+    <string name="review_body">No action needed while we review. You’ll be notified the moment a decision is made.</string>
+    <string name="both_required">Please choose both your facial photo and liveness video.</string>
+    <string name="face_format">Facial photo must be a JPG, PNG, WEBP or HEIC image.</string>
+    <string name="video_format">Liveness video must be an MP4 or WEBM file.</string>
+    <string name="face_size">Facial photo must be 5 MB or smaller.</string>
+    <string name="video_size">Liveness video must be 50 MB or smaller.</string>
+
+    <!-- Profile -->
+    <string name="account">Account</string>
+    <string name="your_profile">Your profile</string>
+    <string name="profile_sub">The details we use for your account. Your BVN is stored encrypted and never shown again.</string>
+    <string name="personal_details">Personal details</string>
+    <string name="name_and_phone">Name and phone.</string>
+    <string name="profile_updated">Profile saved.</string>
+    <string name="profile_update_failed">Failed to update profile</string>
+    <string name="email_cannot_be_changed">Email cannot be changed. %1$s</string>
+    <string name="change_password">Change password</string>
+    <string name="change_password_sub">Changing your password signs you out of every device. You’ll need your new password to sign back in.</string>
+    <string name="passwords_do_not_match">New passwords do not match.</string>
+    <string name="password_changed">Password updated</string>
+    <string name="password_change_failed">Failed to change password</string>
+    <string name="save">Save changes</string>
+    <string name="updating">Updating…</string>
+    <string name="saving">Saving…</string>
+
+    <!-- Notifications -->
+    <string name="inbox">Inbox</string>
+    <string name="notifications_title">Notifications</string>
+    <string name="mark_all_read">Mark all as read</string>
+    <string name="no_notifications_yet">No notifications yet</string>
+    <string name="no_notifications_body">Payment confirmations, proof reviews and account events will appear here.</string>
+    <string name="new_badge">new</string>
+
+    <!-- History -->
+    <string name="payment_history">Payment history</string>
+    <string name="history_sub">Every payment attempt on your contributions, newest first.</string>
+    <string name="contribution">Contribution</string>
+    <string name="amount">Amount</string>
+    <string name="status">Status</string>
+    <string name="gateway">Gateway</string>
+    <string name="when">When</string>
+    <string name="reference">Reference</string>
+    <string name="proof">proof</string>
+    <string name="no_payments">No payments yet</string>
+    <string name="payments_body">When you pay a contribution — by card or transfer proof — it will appear here.</string>
+
+    <!-- Admin -->
+    <string name="admin_dashboard">Admin dashboard</string>
+    <string name="admin_stats">Statistics</string>
+    <string name="admin_users">Users</string>
+    <string name="admin_verifications">KYC queue</string>
+    <string name="admin_payments">Payments</string>
+    <string name="admin_emails">Email outbox</string>
+    <string name="admin_audit">Audit log</string>
+    <string name="user_overview">User overview</string>
+    <string name="approve">Approve</string>
+    <string name="reject">Reject</string>
+    <string name="suspend">Suspend</string>
+    <string name="activate">Activate</string>
+    <string name="promote">Promote to admin</string>
+    <string name="demote">Demote to user</string>
+    <string name="reason_required">Reason is required</string>
+
+    <!-- Errors -->
+    <string name="error_general">Something went wrong. Please try again.</string>
+    <string name="error_network">Network error. Please check your connection.</string>
+    <string name="error_unauthorized">Session expired. Please sign in again.</string>
+    <string name="error_payment_failed">Payment failed. Please try again.</string>
+    <string name="error_upload_failed">Upload failed. Please try again.</string>
+    <string name="error_delete_failed">Failed to delete contribution</string>
+    <string name="error_load_failed">Failed to load data</string>
+    <string name="ok">OK</string>
+    <string name="dismiss">Dismiss</string>
+</resources>
